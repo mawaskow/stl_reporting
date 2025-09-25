@@ -27,6 +27,7 @@ class airBnBSpider(scrapy.Spider):
 '''
 get urls for all pages of results
 get all entities of class="rfexzly atm_9s_1ulexfb atm_7l_1j28jx2 atm_e2_1osqo2v dir dir-ltr" or target="listing_*"
+maybe selenium to get all the results then scrapy to work with the collected urls?
 construct the urls based on the target="listing_*" value
 remove duplicates once all results have been gathered across all urls
 follow all the links and extract all the data into the items

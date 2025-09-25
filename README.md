@@ -34,3 +34,7 @@ Google Doc: [Airbnb Reporting Workflow](https://docs.google.com/document/d/1dJ9p
 6. Evaluate automated method against existing dataset
 7. Start on Google Sheet "Airbnb Power Hour" tab "Booking.com reporting" (11 entries)
 Create own scraper of Booking.com
+
+
+Instead of scraping airbnb, since it blocks both scrapy and selenium
+https://insideairbnb.com/get-the-data
