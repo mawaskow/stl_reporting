@@ -16,16 +16,10 @@ import os
 cwd = os.getcwd()
 output_dir = cwd+"/scraping_outputs"
 
-def main():
-    st = time.time()
-    urls = {
-        "Galway County":"https://www.booking.com/region/ie/county-galway.en-gb.html", #1022 #946 #820
-        "Galway City": "https://www.booking.com/city/ie/galway.en-gb.html", #429 #376 #344
-        "Connemara": "https://www.booking.com/region/ie/connemara.en-gb.html" #431 #422 #400
-    }
+def run_crawler(url):
     driver = webdriver.Chrome()
-    driver.get(urls["Connemara"])
-    #
+    driver.get(url)
+    # landing page, get to results page
     see_all_options = driver.find_element(By.XPATH, "//a[@class='de576f5064 b46cd7aad7 ced67027e5 c7a901b0e7 e4f9ca4b0c ca8e0b9533 a9d40b8d51']")
     print(see_all_options.get_attribute("href"))
     see_all_options.click()
@@ -34,9 +28,7 @@ def main():
     time.sleep(1)
     result_heading = driver.find_element(By.XPATH, "//h1[@aria-live='assertive']")
     r_head_txt = result_heading.text
-    # CONTROL
     tot_res_num = int(r_head_txt.split(":")[-1].split(" ")[1])
-    #tot_res_num = 100
     print("\n", tot_res_num, "total results")
     # scroll down page to dynamically load content
     keep_scrolling = True
@@ -62,14 +54,29 @@ def main():
         if len(current_n_res)>3:
             if current_n_res[-1] == (current_n_res[-2]+current_n_res[-3])/2:
                 keep_scrolling = False
-    with open(output_dir+"/booking_connemara_urls.txt", "w") as f:
-        current_lsts = driver.find_elements(By.XPATH, "//a[@data-testid='title-link']")
-        for element in current_lsts:
-            f.write(element.get_attribute('href')+"\n")
+    current_lsts = driver.find_elements(By.XPATH, "//a[@data-testid='title-link']")
+    listing_urls = []
+    for element in current_lsts:
+        listing_urls.append(element.get_attribute('href'))
     driver.quit()
+    return listing_urls, tot_res_num
+def main():
+    urls = {
+        "galway_county":"https://www.booking.com/region/ie/county-galway.en-gb.html", #1022 #946 #820
+        "galway_city": "https://www.booking.com/city/ie/galway.en-gb.html", #429 #376 #344
+        "connemara": "https://www.booking.com/region/ie/connemara.en-gb.html" #431 #422 #400
+    }
+    key = "connemara"
+    #for key in list(urls):
+    st = time.time()
+    listing_urls, tot_res_num = run_crawler(urls[key])
     elapsed = time.time()-st
-    print(f"Found {len(current_lsts)} of {tot_res_num} listings")
+    print(f"Found {len(listing_urls)} of {tot_res_num} listings")
     print(round(elapsed/60,2), "min")
+    with open(output_dir+f"/booking_{key}_urls.txt", "w") as f:
+        for lst_url in listing_urls:
+            cleaned = lst_url.split("?label=gen173nr")[0]
+            f.write(cleaned+"\n")
 
 if __name__ == "__main__":
     main()

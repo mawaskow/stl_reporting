@@ -8,15 +8,17 @@ from scrapy.item import Item, Field
 class lstngItem(Item):
 	link = Field()
 	title = Field()
-	listing_type = Field()
-	listing_area = Field()
+	#listing_type = Field()
+	#listing_area = Field()
 	latitude = Field()
 	longitude = Field()
 	address = Field()
 	description = Field()
-	publication_date = Field()
+	address_hidden = Field()
+	#publication_date = Field()
 	scrape_date = Field()
-	scrape_info = Field()
+	#scrape_info = Field()
+	reserve_prompt = Field()
 
 	pass
 

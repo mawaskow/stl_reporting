@@ -3,30 +3,53 @@ import json
 import hashlib
 import os
 from pathlib import Path
+from ..items import lstngItem
+import datetime
+import time
 
 cwd = os.getcwd()
 output_dir = cwd+"/scraping_outputs"
+
+urls = []
+with open(output_dir+"/booking_connemara_urls.txt", "r") as f:
+    for line in f:
+        urls.append(line.strip())
 
 class bookingSpider(scrapy.Spider):
     name = "booking"
 
     async def start(self):
-        urls = [
-            #"https://www.booking.com/searchresults.html?ss=Galway%2C+Ireland&sb_entire_place=1&efdco=1&label=gen173nr-10CAEoggI46AdIM1gEaGmIAQGYATO4ARfIAQzYAQPoAQH4AQGIAgGoAgG4As7losUGwAIB0gIkMDk1YWZkNzctZjQzNS00NzZjLTkxMWQtYjRlZWZmOWE5YzUz2AIB4AIB&sid=aa49af52a05a1df4bb25bdf70149b942&aid=304142&lang=en-us&sb=1&src_elem=sb&src=index&dest_id=-1502950&dest_type=city&ltfd=6%3A28%3A10-2025_11-2025_12-2025%3A1%3A&group_adults=2&no_rooms=1&group_children=0&nflt=ht_id%3D1200%3Bprivacy_type_no_date%3D3",
-            "https://www.booking.com/searchresults.html?dest_id=-1502950;dest_type=city;nflt=ht_id%3D1200%3Bprivacy_type_no_date%3D3"
-        ]
-        for url in urls:
+        for url in urls:#[:5]:
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        page = response.url.split("/")[-2]
-        filename = f"{output_dir}/test.html"
-        Path(filename).write_bytes(response.body)
-        self.log(f"Saved file {filename}")
+        time.sleep(1)
+        address_obscured=False
+        address_msg = response.selector.xpath('//div[@class="dcf8588897"]/text()').get()
+        if address_msg:
+            if address_msg.split(" ")[0] == "After":
+                address_obscured=True 
+        lst_item = lstngItem()
+        lst_item['link'] = response.url
+        lst_item['title'] = response.selector.xpath('//h2[contains(@class,"pp-header__title")]/text()').get()
+        lst_item['reserve_prompt'] = response.selector.xpath('//span[@class="bui-button__text"]/text()').get()
+        #lst_item['listing_type'] = 
+        loc = response.selector.xpath('//a[@data-atlas-latlng]/@data-atlas-latlng').get()
+        if loc:
+            lat = loc.split(",")[0]
+            lon = loc.split(",")[1]
+        else:
+            lat = None
+            lon = None
+        lst_item['latitude'] = lat
+        lst_item['longitude'] = lon
+        lst_item['address'] = response.selector.xpath('//div[@class="b99b6ef58f cb4b7a25d9 b06461926f"]/text()').get()
+        lst_item['address_hidden'] = address_obscured
+        #lst_item['listing_area'] = ""
+        lst_item['description'] = response.selector.xpath('//p[@data-testid="property-description"]/text()').get()
+        #lst_item['publication_date'] = 
+        lst_item['scrape_date'] = datetime.date.today()
+        #lst_item['scrape_info'] = ""
+        yield lst_item
 
-
-'''
-<span class="ca2ca5203b">Load more results</span>
-data-testid="title-link"
-'''
 # https://scrapfly.io/blog/posts/how-to-scrape-bookingcom
