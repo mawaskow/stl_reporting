@@ -19,7 +19,7 @@ class airBnBSpider(scrapy.Spider):
 
     def parse(self, response):
         page = response.url.split("/")[-2]
-        filename = f"quotes-{page}.html"
+        filename = f"test.html"
         Path(filename).write_bytes(response.body)
         self.log(f"Saved file {filename}")
 
